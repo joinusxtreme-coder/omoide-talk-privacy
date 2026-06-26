@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メッセージを送る - 思い出トーク</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; background: #FFF8F0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #fff; border-radius: 24px; padding: 40px 32px; max-width: 460px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    h1 { color: #E8875A; font-size: 24px; margin-bottom: 8px; text-align: center; }
+    .subtitle { color: #888; font-size: 15px; text-align: center; margin-bottom: 32px; line-height: 1.6; }
+    label { display: block; font-size: 16px; font-weight: bold; color: #555; margin-bottom: 8px; margin-top: 20px; }
+    input, textarea { width: 100%; padding: 14px 16px; font-size: 18px; border: 2px solid #E8D5C4; border-radius: 12px; background: #FFFAF7; color: #333; outline: none; font-family: inherit; }
+    input:focus, textarea:focus { border-color: #E8875A; }
+    textarea { height: 120px; resize: vertical; }
+    button { width: 100%; margin-top: 28px; padding: 18px; background: #E8875A; color: #fff; font-size: 20px; font-weight: bold; border: none; border-radius: 16px; cursor: pointer; }
+    button:hover { background: #d4764a; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .success { display: none; text-align: center; padding: 20px; }
+    .success-icon { font-size: 60px; margin-bottom: 16px; }
+    .success-text { font-size: 20px; color: #333; line-height: 1.6; }
+    .note { font-size: 13px; color: #aaa; text-align: center; margin-top: 20px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="form-area">
+      <h1>💌 メッセージを送る</h1>
+      <p class="subtitle">思い出トークのご利用者へ<br>メッセージを送ることができます。<br>次にアプリを開いたときにAIがお伝えします。</p>
+
+      <label for="name">あなたのお名前</label>
+      <input type="text" id="name" placeholder="例：太郎（息子）" maxlength="20">
+
+      <label for="message">メッセージ</label>
+      <textarea id="message" placeholder="例：元気にしてる？また電話するね。"></textarea>
+
+      <button id="send-btn" onclick="sendMessage()">送信する</button>
+      <p class="note">※ メッセージは次回アプリを開いたときに届きます</p>
+    </div>
+
+    <div class="success" id="success-area">
+      <div class="success-icon">✅</div>
+      <p class="success-text">メッセージを送りました！<br>次にアプリを開いたときにお伝えします。</p>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iyxjyobdpqsyrdbcckis.supabase.co';
+    const FUNCTION_URL = SUPABASE_URL + '/functions/v1/family-message';
+    const SECRET = 'omoide2026';
+
+    async function sendMessage() {
+      const name = document.getElementById('name').value.trim();
+      const message = document.getElementById('message').value.trim();
+      if (!name) { alert('お名前を入力してください'); return; }
+      if (!message) { alert('メッセージを入力してください'); return; }
+
+      const btn = document.getElementById('send-btn');
+      btn.disabled = true;
+      btn.textContent = '送信中...';
+
+      try {
+        const res = await fetch(FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sender_name: name, message, secret: SECRET }),
+        });
+        if (!res.ok) throw new Error('送信エラー');
+        document.getElementById('form-area').style.display = 'none';
+        document.getElementById('success-area').style.display = 'block';
+      } catch (e) {
+        alert('送信に失敗しました。しばらく後でお試しください。');
+        btn.disabled = false;
+        btn.textContent = '送信する';
+      }
+    }
+  </script>
+</body>
+</html>
