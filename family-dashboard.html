@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家族ダッシュボード - 思い出トーク</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; background: #FFF8F0; min-height: 100vh; padding: 20px; }
+    .wrap { max-width: 600px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 20px; padding: 32px 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    h1 { color: #E8875A; font-size: 22px; margin-bottom: 6px; text-align: center; }
+    .subtitle { color: #888; font-size: 14px; text-align: center; margin-bottom: 24px; }
+    label { display: block; font-size: 15px; font-weight: bold; color: #555; margin-bottom: 8px; }
+    input { width: 100%; padding: 14px 16px; font-size: 20px; letter-spacing: 2px; border: 2px solid #E8D5C4; border-radius: 12px; background: #FFFAF7; color: #333; outline: none; text-align: center; }
+    input:focus { border-color: #E8875A; }
+    button { width: 100%; margin-top: 16px; padding: 16px; background: #E8875A; color: #fff; font-size: 17px; font-weight: bold; border: none; border-radius: 14px; cursor: pointer; }
+    button:disabled { background: #ccc; }
+    .error { color: #CC4444; font-size: 14px; text-align: center; margin-top: 10px; }
+    .hidden { display: none; }
+    .status-line { font-size: 14px; color: #888; margin-bottom: 20px; }
+    .section-title { font-size: 16px; font-weight: bold; color: #555; margin-bottom: 12px; }
+    .diary-item { background: #FFF8F0; border-radius: 12px; padding: 14px; margin-bottom: 10px; border-left: 3px solid #E8875A; }
+    .diary-topic { font-size: 13px; color: #E8875A; font-weight: bold; margin-bottom: 4px; }
+    .diary-date { font-size: 12px; color: #aaa; margin-bottom: 6px; }
+    .diary-text { font-size: 15px; color: #444; line-height: 1.6; }
+    .empty { color: #aaa; font-size: 14px; }
+    .paywall-icon { font-size: 48px; margin-bottom: 12px; text-align: center; }
+    .paywall-price { font-size: 28px; color: #E8875A; font-weight: bold; margin: 4px 0; text-align: center; }
+    .paywall-price-note { font-size: 13px; color: #aaa; text-align: center; margin-bottom: 20px; }
+    .worry-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f2ece4; }
+    .worry-row:last-child { border-bottom: none; }
+    .worry-icon { font-size: 20px; }
+    .worry-text { font-size: 15px; color: #555; line-height: 1.6; }
+    .compare-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .compare-table th { font-size: 13px; color: #aaa; font-weight: normal; padding: 8px; text-align: center; }
+    .compare-table th.plan-paid { color: #E8875A; font-weight: bold; }
+    .compare-table td { padding: 12px 8px; font-size: 14px; color: #555; text-align: center; border-top: 1px solid #f2ece4; }
+    .compare-table td:first-child { text-align: left; color: #444; }
+    .check-yes { color: #6DBF67; font-size: 18px; }
+    .check-no { color: #ddd; font-size: 18px; }
+    .reassure-box { background: #FFF8F0; border-radius: 12px; padding: 16px; margin-top: 16px; }
+    .reassure-item { font-size: 13px; color: #888; line-height: 1.8; }
+    .cta-btn { display: block; width: 100%; margin-top: 16px; padding: 18px; background: #E8875A; color: #fff; font-size: 17px; font-weight: bold; border: none; border-radius: 14px; cursor: pointer; text-align: center; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="benefits-card">
+      <h1>👨‍👩‍👧 家族ダッシュボード</h1>
+      <p class="subtitle">離れて暮らすご家族の毎日を、<br>スマホひとつで確認できます</p>
+
+      <div class="worry-row">
+        <div class="worry-icon">📵</div>
+        <div class="worry-text">「電話してもなかなか出ない」「元気にしてるか分からない」…そんな不安はありませんか？</div>
+      </div>
+      <div class="worry-row">
+        <div class="worry-icon">📱</div>
+        <div class="worry-text">思い出トークなら、<strong>アプリを開く操作は本人がするだけ</strong>。ご家族は見るだけで大丈夫です。</div>
+      </div>
+
+      <table class="compare-table">
+        <thead>
+          <tr><th></th><th>無料</th><th class="plan-paid">家族プラン<br>月980円</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ご本人のAI会話・日記作成</td><td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td></tr>
+          <tr><td>服薬・水分リマインダー</td><td><span class="check-yes">✓</span></td><td><span class="check-yes">✓</span></td></tr>
+          <tr><td>日記をご家族が閲覧</td><td><span class="check-no">－</span></td><td><span class="check-yes">✓</span></td></tr>
+          <tr><td>最終利用日時の確認</td><td><span class="check-no">－</span></td><td><span class="check-yes">✓</span></td></tr>
+          <tr><td>3日間未利用の自動お知らせ</td><td><span class="check-no">－</span></td><td><span class="check-yes">✓</span></td></tr>
+        </tbody>
+      </table>
+
+      <p class="paywall-price">月額 980円</p>
+      <p class="paywall-price-note">初期費用・工事不要／いつでも解約できます</p>
+
+      <div class="reassure-box">
+        <p class="reassure-item">✓ ご本人のスマホ操作は不要（見るだけでOK）</p>
+        <p class="reassure-item">✓ クレジットカード登録前に、まずは無料の内容だけでもお試しいただけます</p>
+        <p class="reassure-item">✓ 合言葉さえあれば他のご家族も一緒に見られます</p>
+      </div>
+    </div>
+
+    <div class="card" id="login-card">
+      <label for="code">合言葉をお持ちの方はこちら</label>
+      <input type="text" id="code" placeholder="例：AB12CD" maxlength="10">
+      <button id="login-btn" onclick="login()">見る</button>
+      <p class="error hidden" id="error-msg">合言葉が正しくありません</p>
+    </div>
+
+    <div class="hidden" id="dashboard-area"></div>
+  </div>
+
+  <script>
+    // データはanonキーで直接テーブルを読まず、必ずEdge Function経由で取得する。
+    // Edge Function側（service role key）が合言葉と購読状態をサーバーサイドで検証するため、
+    // anonキーはFunctions呼び出しの認可のみに使い、テーブルへの直接アクセス権は持たせない。
+    const FUNCTION_URL = 'https://iyxjyobdpqsyrdbcckis.supabase.co/functions/v1/family-dashboard-data';
+    const ANON_KEY = 'sb_publishable_1eBf5hTxX141q9ExRFdImg_Zzuc1NI2';
+
+    async function loginWithCode(code) {
+      const errorMsg = document.getElementById('error-msg');
+      errorMsg.classList.add('hidden');
+      if (!code) return;
+
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true;
+      btn.textContent = '確認中...';
+
+      try {
+        const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(code)}`, {
+          headers: { 'Authorization': `Bearer ${ANON_KEY}` },
+        });
+        if (res.status === 404) {
+          errorMsg.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = '見る';
+          return;
+        }
+        if (!res.ok) throw new Error('request failed');
+        const data = await res.json();
+        renderDashboard(data);
+      } catch (e) {
+        errorMsg.textContent = '通信エラーが発生しました。しばらく後でお試しください。';
+        errorMsg.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = '見る';
+      }
+    }
+
+    function login() {
+      const code = document.getElementById('code').value.trim().toUpperCase();
+      loginWithCode(code);
+    }
+
+    // メール内リンク（?code=XXXXX）から開いた場合は自動ログイン
+    (function autoLoginFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const codeParam = params.get('code');
+      if (codeParam) {
+        document.getElementById('code').value = codeParam.toUpperCase();
+        loginWithCode(codeParam.toUpperCase());
+      }
+    })();
+
+    function renderDashboard(data) {
+      document.getElementById('login-card').classList.add('hidden');
+      const area = document.getElementById('dashboard-area');
+      area.classList.remove('hidden');
+
+      if (!data.subscribed) {
+        // 未購読の場合はbenefits-cardをそのまま残し、確認メッセージだけ追加する
+        area.innerHTML = `
+          <div class="card">
+            <div class="paywall-icon">🔒</div>
+            <p class="subtitle" style="margin-bottom:0;">${data.user_name || 'ご本人'}さんの合言葉を確認しました。<br>閲覧には上記の家族プランへのご登録が必要です。</p>
+          </div>
+        `;
+        return;
+      }
+
+      document.getElementById('benefits-card').classList.add('hidden');
+
+      const lastSeen = data.last_seen_at
+        ? new Date(data.last_seen_at).toLocaleString('ja-JP')
+        : '記録なし';
+
+      const diaryHtml = (data.diaries || []).length
+        ? data.diaries.map(d => `
+            <div class="diary-item">
+              <div class="diary-topic">${d.topic || ''}</div>
+              <div class="diary-date">${new Date(d.created_at).toLocaleDateString('ja-JP')}</div>
+              <div class="diary-text">${d.summary_text}</div>
+            </div>
+          `).join('')
+        : '<p class="empty">日記がまだありません</p>';
+
+      area.innerHTML = `
+        <div class="card">
+          <p class="status-line">👤 ${data.user_name || 'ご本人'}さん　最終利用：${lastSeen}</p>
+          <div class="section-title">📔 最近の日記</div>
+          ${diaryHtml}
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
