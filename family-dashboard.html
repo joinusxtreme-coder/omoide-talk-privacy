@@ -83,11 +83,6 @@
 
     .call-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: #6DBF67; color: #fff; font-size: 16px; font-weight: bold; border-radius: 14px; text-decoration: none; }
 
-    .topic-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-    .topic-rank { font-size: 13px; font-weight: bold; color: #E8875A; width: 20px; }
-    .topic-name { flex: 1; font-size: 14px; color: #444; }
-    .topic-count { font-size: 12px; color: #aaa; }
-
     .mini-trend { display: flex; align-items: flex-end; gap: 6px; height: 50px; margin-top: 10px; }
     .mini-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
     .mini-bar { width: 100%; max-width: 18px; border-radius: 4px 4px 1px 1px; background: #eee; }
@@ -382,23 +377,6 @@
         </div>
       `;
 
-      // ── 好きな話題ランキング ──
-      const topicRanking = data.topicRanking || [];
-      const topicHtml = topicRanking.length
-        ? `
-          <div class="card">
-            <div class="section-title">🏆 好きな話題ランキング</div>
-            ${topicRanking.map((t, i) => `
-              <div class="topic-row">
-                <div class="topic-rank">${['🥇', '🥈', '🥉'][i] || (i + 1)}</div>
-                <div class="topic-name">${t.topic}</div>
-                <div class="topic-count">${t.count}回</div>
-              </div>
-            `).join('')}
-          </div>
-        `
-        : '';
-
       // ── 体調チェック履歴（気分推移） ──
       const wellnessList = data.wellnessHistory || [];
       const moodDotsHtml = [...wellnessList].reverse().map(w => {
@@ -445,7 +423,7 @@
         </div>
       `;
 
-      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + waterHtml + topicHtml + wellnessHtml + alertHtml + diaryListHtml;
+      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + waterHtml + wellnessHtml + alertHtml + diaryListHtml;
     }
 
     function renderMiniTrend(trend) {
