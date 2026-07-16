@@ -42,6 +42,39 @@
     .reassure-box { background: #FFF8F0; border-radius: 12px; padding: 16px; margin-top: 16px; }
     .reassure-item { font-size: 13px; color: #888; line-height: 1.8; }
     .cta-btn { display: block; width: 100%; margin-top: 16px; padding: 18px; background: #E8875A; color: #fff; font-size: 17px; font-weight: bold; border: none; border-radius: 14px; cursor: pointer; text-align: center; text-decoration: none; }
+
+    /* ── ここからダッシュボード本体（購読済み表示） ── */
+    .header-card { display: flex; align-items: center; gap: 16px; }
+    .avatar { width: 56px; height: 56px; border-radius: 50%; background: #FFF0E0; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+    .header-name { font-size: 19px; font-weight: bold; color: #333; }
+    .header-sub { font-size: 13px; color: #999; margin-top: 2px; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+    .status-dot.online { background: #6DBF67; }
+    .status-dot.offline { background: #E0A040; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
+    .stat-tile { background: #FFF8F0; border-radius: 14px; padding: 14px 8px; text-align: center; }
+    .stat-value { font-size: 22px; font-weight: bold; color: #E8875A; }
+    .stat-label { font-size: 11px; color: #999; margin-top: 4px; }
+
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 90px; margin: 12px 0 6px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .bar { width: 100%; max-width: 26px; background: #F5C897; border-radius: 6px 6px 2px 2px; transition: height .3s; }
+    .bar.has-entry { background: #E8875A; }
+    .bar-day { font-size: 10px; color: #aaa; margin-top: 6px; }
+
+    .med-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px; border-bottom: 1px solid #f2ece4; }
+    .med-row:last-child { border-bottom: none; }
+    .med-slot { font-size: 14px; color: #555; }
+    .med-badge { font-size: 12px; font-weight: bold; padding: 4px 12px; border-radius: 20px; }
+    .med-badge.taken { background: #E8F5E9; color: #4C9A4C; }
+    .med-badge.missed { background: #FDEDED; color: #C0392B; }
+    .med-badge.unknown { background: #F2F2F2; color: #aaa; }
+    .adherence-ring-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+    .adherence-num { font-size: 30px; font-weight: bold; color: #E8875A; }
+    .adherence-label { font-size: 12px; color: #999; }
+
+    .wellness-box { background: linear-gradient(135deg, #FFF8F0, #FFF0E0); border-radius: 12px; padding: 16px; font-size: 14px; color: #555; line-height: 1.7; }
   </style>
 </head>
 <body>
@@ -159,10 +192,95 @@
 
       document.getElementById('benefits-card').classList.add('hidden');
 
-      const lastSeen = data.last_seen_at
-        ? new Date(data.last_seen_at).toLocaleString('ja-JP')
-        : '記録なし';
+      const name = data.user_name || 'ご本人';
+      const lastSeenDate = data.last_seen_at ? new Date(data.last_seen_at) : null;
+      const hoursSince = lastSeenDate ? (Date.now() - lastSeenDate.getTime()) / 3600000 : null;
+      const isRecentlyActive = hoursSince !== null && hoursSince < 30;
+      const lastSeenText = lastSeenDate ? lastSeenDate.toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '記録なし';
 
+      const weekCount = (data.weeklyActivity || []).reduce((sum, d) => sum + d.count, 0);
+      const adherence = data.medicine?.adherenceRate;
+
+      // ── ヘッダー：本人の状態カード ──
+      const headerHtml = `
+        <div class="card header-card">
+          <div class="avatar">👤</div>
+          <div>
+            <div class="header-name">${name}さん</div>
+            <div class="header-sub"><span class="status-dot ${isRecentlyActive ? 'online' : 'offline'}"></span>最終利用：${lastSeenText}</div>
+          </div>
+        </div>
+      `;
+
+      // ── サマリー統計 ──
+      const statsHtml = `
+        <div class="card">
+          <div class="stat-grid">
+            <div class="stat-tile">
+              <div class="stat-value">${weekCount}</div>
+              <div class="stat-label">今週の会話回数</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value">${adherence !== null && adherence !== undefined ? adherence + '%' : '－'}</div>
+              <div class="stat-label">服薬達成率（週）</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value">${(data.diaries || []).length}</div>
+              <div class="stat-label">記録された日記</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // ── 週間の会話推移（簡易棒グラフ） ──
+      const maxCount = Math.max(1, ...(data.weeklyActivity || []).map(d => d.count));
+      const barsHtml = (data.weeklyActivity || []).map(d => {
+        const dayLabel = new Date(d.date + 'T00:00:00').toLocaleDateString('ja-JP', { weekday: 'short' });
+        const heightPct = Math.max(6, Math.round((d.count / maxCount) * 100));
+        return `
+          <div class="bar-col">
+            <div class="bar ${d.count > 0 ? 'has-entry' : ''}" style="height:${heightPct}%"></div>
+            <div class="bar-day">${dayLabel}</div>
+          </div>
+        `;
+      }).join('');
+      const weeklyChartHtml = `
+        <div class="card">
+          <div class="section-title">📊 今週の会話の様子</div>
+          <div class="bar-chart">${barsHtml}</div>
+        </div>
+      `;
+
+      // ── 服薬状況 ──
+      const slotLabel = { morning: '朝', noon: '昼', evening: '夜' };
+      const todayLogs = data.medicine?.today || [];
+      const medRowsHtml = ['morning', 'noon', 'evening'].map(slot => {
+        const log = todayLogs.find(l => l.slot === slot);
+        const badge = !log
+          ? '<span class="med-badge unknown">未確認</span>'
+          : log.taken
+            ? '<span class="med-badge taken">✓ 服用済み</span>'
+            : '<span class="med-badge missed">未服用</span>';
+        return `<div class="med-row"><div class="med-slot">${slotLabel[slot]}のお薬</div>${badge}</div>`;
+      }).join('');
+      const medicineHtml = `
+        <div class="card">
+          <div class="section-title">💊 本日の服薬状況</div>
+          ${medRowsHtml}
+        </div>
+      `;
+
+      // ── 体調チェック（あれば） ──
+      const wellnessHtml = data.wellness
+        ? `
+          <div class="card">
+            <div class="section-title">🩺 最近の体調チェック</div>
+            <div class="wellness-box">${data.wellness.summary || 'コメントなし'}</div>
+          </div>
+        `
+        : '';
+
+      // ── 日記一覧 ──
       const diaryHtml = (data.diaries || []).length
         ? data.diaries.map(d => `
             <div class="diary-item">
@@ -172,14 +290,14 @@
             </div>
           `).join('')
         : '<p class="empty">日記がまだありません</p>';
-
-      area.innerHTML = `
+      const diaryListHtml = `
         <div class="card">
-          <p class="status-line">👤 ${data.user_name || 'ご本人'}さん　最終利用：${lastSeen}</p>
           <div class="section-title">📔 最近の日記</div>
           ${diaryHtml}
         </div>
       `;
+
+      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + wellnessHtml + diaryListHtml;
     }
   </script>
 </body>
