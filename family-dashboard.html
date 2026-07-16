@@ -52,7 +52,7 @@
     .status-dot.online { background: #6DBF67; }
     .status-dot.offline { background: #E0A040; }
 
-    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 4px; }
     .stat-tile { background: #FFF8F0; border-radius: 14px; padding: 14px 8px; text-align: center; }
     .stat-value { font-size: 22px; font-weight: bold; color: #E8875A; }
     .stat-label { font-size: 11px; color: #999; margin-top: 4px; }
@@ -213,6 +213,7 @@
       `;
 
       // ── サマリー統計 ──
+      const waterAdherence = data.water?.adherenceRate;
       const statsHtml = `
         <div class="card">
           <div class="stat-grid">
@@ -223,6 +224,10 @@
             <div class="stat-tile">
               <div class="stat-value">${adherence !== null && adherence !== undefined ? adherence + '%' : '－'}</div>
               <div class="stat-label">服薬達成率（週）</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value">${waterAdherence !== null && waterAdherence !== undefined ? waterAdherence + '%' : '－'}</div>
+              <div class="stat-label">水分補給達成率（週）</div>
             </div>
             <div class="stat-tile">
               <div class="stat-value">${(data.diaries || []).length}</div>
@@ -270,6 +275,20 @@
         </div>
       `;
 
+      // ── 水分補給状況 ──
+      const waterToday = data.water || {};
+      const waterCount = waterToday.todayTakenCount || 0;
+      const waterChecks = waterToday.todayCount || 0;
+      const waterHtml = `
+        <div class="card">
+          <div class="section-title">💧 本日の水分補給</div>
+          <div class="med-row">
+            <div class="med-slot">声がけ回数：${waterChecks}回</div>
+            <span class="med-badge ${waterCount > 0 ? 'taken' : 'unknown'}">${waterCount > 0 ? `✓ ${waterCount}回 補給できています` : '記録なし'}</span>
+          </div>
+        </div>
+      `;
+
       // ── 体調チェック（あれば） ──
       const wellnessHtml = data.wellness
         ? `
@@ -297,7 +316,7 @@
         </div>
       `;
 
-      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + wellnessHtml + diaryListHtml;
+      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + waterHtml + wellnessHtml + diaryListHtml;
     }
   </script>
 </body>
