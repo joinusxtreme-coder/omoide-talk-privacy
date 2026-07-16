@@ -74,7 +74,34 @@
     .adherence-num { font-size: 30px; font-weight: bold; color: #E8875A; }
     .adherence-label { font-size: 12px; color: #999; }
 
-    .wellness-box { background: linear-gradient(135deg, #FFF8F0, #FFF0E0); border-radius: 12px; padding: 16px; font-size: 14px; color: #555; line-height: 1.7; }
+    .wellness-box { background: linear-gradient(135deg, #FFF8F0, #FFF0E0); border-radius: 12px; padding: 16px; font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 8px; }
+    .wellness-date { font-size: 11px; color: #bbb; margin-bottom: 4px; }
+    .mood-row { display: flex; gap: 6px; align-items: flex-end; height: 40px; margin-top: 12px; }
+    .mood-dot { flex: 1; border-radius: 6px; background: #F5C897; }
+    .mood-dot.good { background: #6DBF67; }
+    .mood-dot.bad { background: #E07A5F; }
+
+    .call-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: #6DBF67; color: #fff; font-size: 16px; font-weight: bold; border-radius: 14px; text-decoration: none; }
+
+    .topic-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+    .topic-rank { font-size: 13px; font-weight: bold; color: #E8875A; width: 20px; }
+    .topic-name { flex: 1; font-size: 14px; color: #444; }
+    .topic-count { font-size: 12px; color: #aaa; }
+
+    .mini-trend { display: flex; align-items: flex-end; gap: 6px; height: 50px; margin-top: 10px; }
+    .mini-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .mini-bar { width: 100%; max-width: 18px; border-radius: 4px 4px 1px 1px; background: #eee; }
+    .mini-bar.filled { background: #E8875A; }
+
+    .ack-btn { font-size: 12px; color: #E8875A; background: none; border: 1px solid #E8D5C4; border-radius: 20px; padding: 4px 12px; width: auto; margin-top: 8px; cursor: pointer; }
+    .ack-btn.done { color: #6DBF67; border-color: #6DBF67; }
+    .ack-btn:disabled { opacity: 0.6; }
+
+    .search-input { font-size: 15px; padding: 10px 14px; letter-spacing: normal; text-align: left; margin-bottom: 12px; }
+
+    .alert-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; color: #888; border-bottom: 1px solid #f2ece4; }
+    .alert-row:last-child { border-bottom: none; }
+    .alert-icon { font-size: 15px; }
   </style>
 </head>
 <body>
@@ -133,6 +160,7 @@
       const errorMsg = document.getElementById('error-msg');
       errorMsg.classList.add('hidden');
       if (!code) return;
+      currentCode = code;
 
       const btn = document.getElementById('login-btn');
       btn.disabled = true;
@@ -164,6 +192,57 @@
       loginWithCode(code);
     }
 
+    let currentCode = '';
+    let currentData = null;
+
+    async function reloadDashboard() {
+      const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}`, {
+        headers: { 'Authorization': `Bearer ${ANON_KEY}` },
+      });
+      const data = await res.json();
+      renderDashboard(data);
+    }
+
+    async function searchDiaries() {
+      const q = document.getElementById('diary-search')?.value.trim() || '';
+      const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}&q=${encodeURIComponent(q)}`, {
+        headers: { 'Authorization': `Bearer ${ANON_KEY}` },
+      });
+      const data = await res.json();
+      currentData = data;
+      document.getElementById('diary-list-area').innerHTML = renderDiaryList(data.diaries);
+    }
+
+    async function acknowledgeDiary(diaryId, btnEl) {
+      btnEl.disabled = true;
+      btnEl.textContent = '送信中...';
+      try {
+        await fetch(FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: currentCode, action: 'acknowledge_diary', diary_id: diaryId }),
+        });
+        btnEl.textContent = '👀 確認しました';
+        btnEl.classList.add('done');
+      } catch {
+        btnEl.disabled = false;
+        btnEl.textContent = '確認する';
+      }
+    }
+
+    function renderDiaryList(diaries) {
+      if (!diaries || !diaries.length) return '<p class="empty">日記が見つかりません</p>';
+      return diaries.map(d => `
+        <div class="diary-item">
+          <div class="diary-topic">${d.topic || ''}</div>
+          <div class="diary-date">${new Date(d.created_at).toLocaleDateString('ja-JP')}</div>
+          <div class="diary-text">${d.summary_text}</div>
+          <button class="ack-btn ${d.acknowledged ? 'done' : ''}" ${d.acknowledged ? 'disabled' : ''}
+            onclick="acknowledgeDiary('${d.id}', this)">${d.acknowledged ? '👀 確認しました' : '確認する'}</button>
+        </div>
+      `).join('');
+    }
+
     // メール内リンク（?code=XXXXX）から開いた場合は自動ログイン
     (function autoLoginFromUrl() {
       const params = new URLSearchParams(location.search);
@@ -191,6 +270,7 @@
       }
 
       document.getElementById('benefits-card').classList.add('hidden');
+      currentData = data;
 
       const name = data.user_name || 'ご本人';
       const lastSeenDate = data.last_seen_at ? new Date(data.last_seen_at) : null;
@@ -201,14 +281,21 @@
       const weekCount = (data.weeklyActivity || []).reduce((sum, d) => sum + d.count, 0);
       const adherence = data.medicine?.adherenceRate;
 
-      // ── ヘッダー：本人の状態カード ──
+      // ── ヘッダー：本人の状態カード＋電話ボタン ──
+      const streakBadge = data.streak > 0 ? `<span style="margin-left:8px;color:#E8875A;font-weight:bold;">🔥${data.streak}日連続</span>` : '';
+      const callBtnHtml = data.phone
+        ? `<a class="call-btn" href="tel:${data.phone}">📞 ${name}さんに電話する</a>`
+        : '';
       const headerHtml = `
-        <div class="card header-card">
-          <div class="avatar">👤</div>
-          <div>
-            <div class="header-name">${name}さん</div>
-            <div class="header-sub"><span class="status-dot ${isRecentlyActive ? 'online' : 'offline'}"></span>最終利用：${lastSeenText}</div>
+        <div class="card header-card" style="flex-direction:column; align-items:stretch;">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div class="avatar">👤</div>
+            <div>
+              <div class="header-name">${name}さん${streakBadge}</div>
+              <div class="header-sub"><span class="status-dot ${isRecentlyActive ? 'online' : 'offline'}"></span>最終利用：${lastSeenText}</div>
+            </div>
           </div>
+          ${callBtnHtml}
         </div>
       `;
 
@@ -256,7 +343,7 @@
         </div>
       `;
 
-      // ── 服薬状況 ──
+      // ── 服薬状況（本日＋週間トレンド） ──
       const slotLabel = { morning: '朝', noon: '昼', evening: '夜' };
       const todayLogs = data.medicine?.today || [];
       const medRowsHtml = ['morning', 'noon', 'evening'].map(slot => {
@@ -268,17 +355,21 @@
             : '<span class="med-badge missed">未服用</span>';
         return `<div class="med-row"><div class="med-slot">${slotLabel[slot]}のお薬</div>${badge}</div>`;
       }).join('');
+      const medTrendHtml = renderMiniTrend(data.medicine?.weeklyTrend);
       const medicineHtml = `
         <div class="card">
           <div class="section-title">💊 本日の服薬状況</div>
           ${medRowsHtml}
+          <div class="section-title" style="margin-top:16px; font-size:13px;">週間の達成率推移</div>
+          ${medTrendHtml}
         </div>
       `;
 
-      // ── 水分補給状況 ──
+      // ── 水分補給状況（本日＋週間トレンド） ──
       const waterToday = data.water || {};
       const waterCount = waterToday.todayTakenCount || 0;
       const waterChecks = waterToday.todayCount || 0;
+      const waterTrendHtml = renderMiniTrend(data.water?.weeklyTrend);
       const waterHtml = `
         <div class="card">
           <div class="section-title">💧 本日の水分補給</div>
@@ -286,37 +377,93 @@
             <div class="med-slot">声がけ回数：${waterChecks}回</div>
             <span class="med-badge ${waterCount > 0 ? 'taken' : 'unknown'}">${waterCount > 0 ? `✓ ${waterCount}回 補給できています` : '記録なし'}</span>
           </div>
+          <div class="section-title" style="margin-top:16px; font-size:13px;">週間の達成率推移</div>
+          ${waterTrendHtml}
         </div>
       `;
 
-      // ── 体調チェック（あれば） ──
-      const wellnessHtml = data.wellness
+      // ── 好きな話題ランキング ──
+      const topicRanking = data.topicRanking || [];
+      const topicHtml = topicRanking.length
         ? `
           <div class="card">
-            <div class="section-title">🩺 最近の体調チェック</div>
-            <div class="wellness-box">${data.wellness.summary || 'コメントなし'}</div>
+            <div class="section-title">🏆 好きな話題ランキング</div>
+            ${topicRanking.map((t, i) => `
+              <div class="topic-row">
+                <div class="topic-rank">${['🥇', '🥈', '🥉'][i] || (i + 1)}</div>
+                <div class="topic-name">${t.topic}</div>
+                <div class="topic-count">${t.count}回</div>
+              </div>
+            `).join('')}
           </div>
         `
         : '';
 
-      // ── 日記一覧 ──
-      const diaryHtml = (data.diaries || []).length
-        ? data.diaries.map(d => `
-            <div class="diary-item">
-              <div class="diary-topic">${d.topic || ''}</div>
-              <div class="diary-date">${new Date(d.created_at).toLocaleDateString('ja-JP')}</div>
-              <div class="diary-text">${d.summary_text}</div>
-            </div>
-          `).join('')
-        : '<p class="empty">日記がまだありません</p>';
+      // ── 体調チェック履歴（気分推移） ──
+      const wellnessList = data.wellnessHistory || [];
+      const moodDotsHtml = [...wellnessList].reverse().map(w => {
+        const mood = Number(w.mood) || 3;
+        const cls = mood >= 4 ? 'good' : mood <= 2 ? 'bad' : '';
+        return `<div class="mood-dot ${cls}" style="height:${mood * 20}%" title="${w.checked_date}"></div>`;
+      }).join('');
+      const wellnessHtml = wellnessList.length
+        ? `
+          <div class="card">
+            <div class="section-title">🩺 最近の体調チェック</div>
+            <div class="wellness-date">${wellnessList[0].checked_date}</div>
+            <div class="wellness-box">${wellnessList[0].summary || 'コメントなし'}</div>
+            <div class="mood-row">${moodDotsHtml}</div>
+          </div>
+        `
+        : '';
+
+      // ── アラート履歴 ──
+      const alertLabel = { inactivity: '⚠️ 3日間未利用のお知らせ', weekly_report: '📅 週次レポート送信' };
+      const alertLogs = data.alertLogs || [];
+      const alertHtml = alertLogs.length
+        ? `
+          <div class="card">
+            <div class="section-title">🔔 お知らせ履歴</div>
+            ${alertLogs.map(a => `
+              <div class="alert-row">
+                <span class="alert-icon">${a.alert_type === 'inactivity' ? '⚠️' : '📅'}</span>
+                <span>${alertLabel[a.alert_type] || a.alert_type}</span>
+                <span style="margin-left:auto;">${new Date(a.created_at).toLocaleDateString('ja-JP')}</span>
+              </div>
+            `).join('')}
+          </div>
+        `
+        : '';
+
+      // ── 日記一覧（検索付き） ──
       const diaryListHtml = `
         <div class="card">
-          <div class="section-title">📔 最近の日記</div>
-          ${diaryHtml}
+          <div class="section-title">📔 日記を探す</div>
+          <input class="search-input" id="diary-search" placeholder="キーワードで検索（例：野球）" onkeydown="if(event.key==='Enter') searchDiaries()">
+          <button onclick="searchDiaries()" style="margin-bottom:16px;">検索する</button>
+          <div id="diary-list-area">${renderDiaryList(data.diaries)}</div>
         </div>
       `;
 
-      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + waterHtml + wellnessHtml + diaryListHtml;
+      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + waterHtml + topicHtml + wellnessHtml + alertHtml + diaryListHtml;
+    }
+
+    function renderMiniTrend(trend) {
+      if (!trend || !trend.length) return '<p class="empty" style="font-size:12px;">データがまだありません</p>';
+      return `
+        <div class="mini-trend">
+          ${trend.map(t => {
+            const dayLabel = new Date(t.date + 'T00:00:00').toLocaleDateString('ja-JP', { weekday: 'short' });
+            const pct = t.rate === null ? 0 : Math.max(4, t.rate);
+            return `
+              <div class="mini-bar-col">
+                <div class="mini-bar ${t.rate !== null ? 'filled' : ''}" style="height:${pct}%"></div>
+                <div class="bar-day">${dayLabel}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
     }
   </script>
 </body>
