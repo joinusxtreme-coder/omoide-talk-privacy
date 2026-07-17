@@ -152,6 +152,15 @@
     const CHECKOUT_FUNCTION_URL = 'https://iyxjyobdpqsyrdbcckis.supabase.co/functions/v1/create-checkout-session';
     const ANON_KEY = 'sb_publishable_1eBf5hTxX141q9ExRFdImg_Zzuc1NI2';
 
+    function sessionKey(code) { return `dashboard_session_${code}`; }
+    function getStoredSession(code) { return localStorage.getItem(sessionKey(code)) || ''; }
+    function setStoredSession(code, token) { localStorage.setItem(sessionKey(code), token); }
+
+    function withSession(url, code) {
+      const session = getStoredSession(code);
+      return session ? `${url}&session=${encodeURIComponent(session)}` : url;
+    }
+
     async function startCheckout() {
       const btn = document.getElementById('subscribe-btn');
       const errorMsg = document.getElementById('checkout-error-msg');
@@ -185,7 +194,7 @@
       btn.textContent = '確認中...';
 
       try {
-        const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(code)}`, {
+        const res = await fetch(withSession(`${FUNCTION_URL}?code=${encodeURIComponent(code)}`, code), {
           headers: { 'Authorization': `Bearer ${ANON_KEY}` },
         });
         if (res.status === 404) {
@@ -222,16 +231,40 @@
     let currentData = null;
 
     async function reloadDashboard() {
-      const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}`, {
+      const res = await fetch(withSession(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}`, currentCode), {
         headers: { 'Authorization': `Bearer ${ANON_KEY}` },
       });
       const data = await res.json();
       renderDashboard(data);
     }
 
+    async function requestDashboardLink() {
+      const btn = document.getElementById('send-link-btn');
+      const msg = document.getElementById('send-link-msg');
+      btn.disabled = true;
+      btn.textContent = '送信中...';
+      try {
+        const res = await fetch(FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: currentCode, action: 'send_dashboard_link' }),
+        });
+        if (!res.ok) throw new Error('failed');
+        msg.textContent = 'ご家族のメールアドレス宛に確認メールを送信しました。メール内のリンクを開いてください。';
+        msg.classList.remove('hidden');
+        btn.textContent = '再送する';
+        btn.disabled = false;
+      } catch {
+        msg.textContent = '送信に失敗しました。しばらく後でお試しください。';
+        msg.classList.remove('hidden');
+        btn.textContent = '確認メールを送信する';
+        btn.disabled = false;
+      }
+    }
+
     async function searchDiaries() {
       const q = document.getElementById('diary-search')?.value.trim() || '';
-      const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}&q=${encodeURIComponent(q)}`, {
+      const res = await fetch(withSession(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}&q=${encodeURIComponent(q)}`, currentCode), {
         headers: { 'Authorization': `Bearer ${ANON_KEY}` },
       });
       const data = await res.json();
@@ -269,10 +302,14 @@
       `).join('');
     }
 
-    // メール内リンク（?code=XXXXX）から開いた場合は自動ログイン
+    // メール内リンク（?code=XXXXX&session=YYYY）から開いた場合は自動ログイン
     (function autoLoginFromUrl() {
       const params = new URLSearchParams(location.search);
       const codeParam = params.get('code');
+      const sessionParam = params.get('session');
+      if (codeParam && sessionParam) {
+        setStoredSession(codeParam.toUpperCase(), sessionParam);
+      }
       if (codeParam) {
         document.getElementById('code').value = codeParam.toUpperCase();
         loginWithCode(codeParam.toUpperCase());
@@ -292,6 +329,23 @@
             <p class="subtitle" style="margin-bottom:16px;">${data.user_name || 'ご本人'}さんの合言葉を確認しました。<br>閲覧には家族プランへのご登録が必要です。</p>
             <button id="subscribe-btn" onclick="startCheckout()">月額980円で申し込む</button>
             <p class="error hidden" id="checkout-error-msg">通信エラーが発生しました。しばらく後でお試しください。</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (data.needs_verification) {
+        area.innerHTML = data.family_email_verified ? `
+          <div class="card">
+            <div class="paywall-icon">📧</div>
+            <p class="subtitle" style="margin-bottom:16px;">初回のみ、安全のためご家族の確認済みメールアドレス宛に確認リンクをお送りします。リンクを開くと、このブラウザでは次回から確認は不要になります。</p>
+            <button id="send-link-btn" onclick="requestDashboardLink()">確認メールを送信する</button>
+            <p class="error hidden" id="send-link-msg"></p>
+          </div>
+        ` : `
+          <div class="card">
+            <div class="paywall-icon">⚠️</div>
+            <p class="subtitle" style="margin-bottom:0;">${data.user_name || 'ご本人'}さんの家族メールアドレスがまだ確認されていないため、ダッシュボードを表示できません。ご本人にアプリの設定画面でメールアドレスの確認を完了していただいてください。</p>
           </div>
         `;
         return;
