@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
   <title>アカウント復旧 - 思い出トーク</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,7 +12,8 @@
     .card { background: #fff; border-radius: 20px; padding: 32px 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 20px; }
     h1 { color: #E8875A; font-size: 20px; margin-bottom: 6px; text-align: center; }
     .subtitle { color: #888; font-size: 14px; text-align: center; margin-bottom: 24px; line-height: 1.7; }
-    label { display: block; font-size: 15px; font-weight: bold; color: #555; margin-bottom: 8px; }
+    label { display: block; font-size: 15px; font-weight: bold; color: #555; margin-bottom: 8px; margin-top: 16px; }
+    label:first-of-type { margin-top: 0; }
     input { width: 100%; padding: 14px 16px; font-size: 16px; border: 2px solid #E8D5C4; border-radius: 12px; background: #FFFAF7; color: #333; outline: none; }
     input:focus { border-color: #E8875A; }
     button { width: 100%; margin-top: 16px; padding: 16px; background: #E8875A; color: #fff; font-size: 16px; font-weight: bold; border: none; border-radius: 14px; cursor: pointer; }
@@ -22,7 +24,7 @@
     .msg.success { color: #4C9A4C; }
     .hidden { display: none; }
     .code-box { background: #FFF8F0; border-radius: 12px; padding: 20px; text-align: center; margin-top: 16px; }
-    .code-text { font-size: 28px; font-weight: bold; color: #E8875A; letter-spacing: 4px; }
+    .code-text { font-size: 24px; font-weight: bold; color: #E8875A; letter-spacing: 2px; }
     .hint { font-size: 13px; color: #999; margin-top: 16px; line-height: 1.7; }
   </style>
 </head>
@@ -30,17 +32,19 @@
   <div class="wrap">
     <div class="card" id="request-card">
       <h1>🔑 アカウント復旧</h1>
-      <p class="subtitle">アクセスコードを忘れた場合や、端末を紛失した場合、ご登録済みの「ご家族のメールアドレス」宛に復旧リンクをお送りします。</p>
+      <p class="subtitle">端末を紛失した場合等、ご本人であることを「ご家族のメールアドレス」と「回復キー」の両方で確認します。回復キーは、初回設定時にご本人のみに一度だけ表示されたものです。</p>
       <label for="email">ご家族のメールアドレス</label>
       <input type="email" id="email" placeholder="family@example.com">
-      <button id="request-btn" onclick="requestRecovery()">復旧リンクを送信する</button>
+      <label for="recovery-code">回復キー</label>
+      <input type="text" id="recovery-code" placeholder="XXXX-XXXX-XXXX-XXXX">
+      <button id="verify-btn" onclick="verifyRecovery()">本人確認をする</button>
       <p class="msg hidden" id="request-msg"></p>
-      <p class="hint">※ 送信可否にかかわらず、常に同じメッセージを表示します（メールアドレスの登録有無を第三者に推測されないための仕様です）。</p>
+      <p class="hint">※ ご家族のメールアドレス宛には、復旧要求があったことの通知のみが送られます。ご家族自身がこのメールからデータを削除したり合言葉を変更したりすることはできません。</p>
     </div>
 
     <div class="card hidden" id="action-card">
       <h1>✅ 本人確認ができました</h1>
-      <p class="subtitle" id="welcome-text"></p>
+      <p class="subtitle">合言葉の再発行、またはすべてのデータの削除を行うことができます。この操作は一度きり有効です。</p>
       <button id="reset-code-btn" onclick="resetAccessCode()">合言葉を再発行する</button>
       <div class="code-box hidden" id="new-code-box">
         <div class="code-text" id="new-code-text"></div>
@@ -48,17 +52,12 @@
       <button id="delete-data-btn" class="danger" style="margin-top:24px;" onclick="confirmDeleteAllData()">すべてのデータを削除する</button>
       <p class="msg hidden" id="action-msg"></p>
     </div>
-
-    <div class="card hidden" id="error-card">
-      <h1>⚠️ リンクが無効です</h1>
-      <p class="subtitle">このリンクは無効か、発行から24時間が経過しています。お手数ですが、もう一度復旧リンクの送信をお試しください。</p>
-    </div>
   </div>
 
   <script>
     const FUNCTION_URL = 'https://iyxjyobdpqsyrdbcckis.supabase.co/functions/v1/account-recovery';
     const ANON_KEY = 'sb_publishable_1eBf5hTxX141q9ExRFdImg_Zzuc1NI2';
-    const token = new URLSearchParams(location.search).get('token') || '';
+    let recoveryToken = '';
 
     async function callApi(action, payload) {
       const res = await fetch(FUNCTION_URL, {
@@ -70,21 +69,26 @@
       return { ok: res.ok, status: res.status, data };
     }
 
-    async function requestRecovery() {
+    async function verifyRecovery() {
       const email = document.getElementById('email').value.trim();
+      const code = document.getElementById('recovery-code').value.trim();
       const msg = document.getElementById('request-msg');
-      const btn = document.getElementById('request-btn');
-      if (!email) return;
+      const btn = document.getElementById('verify-btn');
+      if (!email || !code) return;
       btn.disabled = true;
-      btn.textContent = '送信中...';
-      const { ok } = await callApi('request_recovery', { family_email: email });
-      msg.textContent = ok
-        ? 'ご入力いただいたメールアドレスが登録・確認済みのものであれば、復旧リンクを送信しました。メールをご確認ください。'
-        : '通信エラーが発生しました。しばらく後でお試しください。';
-      msg.classList.remove('hidden');
-      msg.classList.add(ok ? 'success' : 'error');
+      btn.textContent = '確認中...';
+      const { ok, data } = await callApi('verify_recovery', { family_email: email, recovery_code: code });
+      if (ok && data.token) {
+        recoveryToken = data.token;
+        document.getElementById('request-card').classList.add('hidden');
+        document.getElementById('action-card').classList.remove('hidden');
+      } else {
+        msg.textContent = 'メールアドレスまたは回復キーが一致しないか、通信エラーが発生しました。時間をおいて再度お試しください。';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+      }
       btn.disabled = false;
-      btn.textContent = '復旧リンクを送信する';
+      btn.textContent = '本人確認をする';
     }
 
     async function resetAccessCode() {
@@ -93,15 +97,14 @@
       const text = document.getElementById('new-code-text');
       btn.disabled = true;
       btn.textContent = '再発行中...';
-      const { ok, data } = await callApi('reset_access_code', { token });
+      const { ok, data } = await callApi('reset_access_code', { token: recoveryToken });
       if (ok && data.access_code) {
         text.textContent = data.access_code;
         box.classList.remove('hidden');
-        btn.textContent = 'もう一度再発行する';
+        btn.textContent = '再発行しました（このボタンは無効になりました）';
       } else {
-        btn.textContent = '失敗しました。再度お試しください';
+        btn.textContent = 'このリンクは既に使用済みか無効です';
       }
-      btn.disabled = false;
     }
 
     function confirmDeleteAllData() {
@@ -114,8 +117,8 @@
       const msg = document.getElementById('action-msg');
       btn.disabled = true;
       btn.textContent = '削除中...';
-      const { ok } = await callApi('delete_all_data', { token });
-      msg.textContent = ok ? 'すべてのデータを削除しました。' : '削除に失敗しました。しばらく後でお試しください。';
+      const { ok } = await callApi('delete_all_data', { token: recoveryToken });
+      msg.textContent = ok ? 'すべてのデータを削除しました。' : '削除に失敗しました。このリンクは既に使用済みか無効の可能性があります。';
       msg.classList.remove('hidden');
       msg.classList.add(ok ? 'success' : 'error');
       if (ok) {
@@ -126,18 +129,6 @@
         btn.textContent = 'すべてのデータを削除する';
       }
     }
-
-    (async function init() {
-      if (!token) return; // トークンなし＝申請フォームをそのまま表示
-      document.getElementById('request-card').classList.add('hidden');
-      const { ok, data } = await callApi('check_token', { token });
-      if (ok) {
-        document.getElementById('action-card').classList.remove('hidden');
-        document.getElementById('welcome-text').textContent = `${data.user_name || 'ご本人'}さんのアカウントを復旧できます。`;
-      } else {
-        document.getElementById('error-card').classList.remove('hidden');
-      }
-    })();
   </script>
 </body>
 </html>
