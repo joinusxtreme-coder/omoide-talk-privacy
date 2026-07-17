@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>外国における個人情報の取扱い - 思い出トーク</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; max-width: 800px; margin: 0 auto; padding: 24px 20px; color: #333; line-height: 1.9; }
+    h1 { color: #E8875A; border-bottom: 2px solid #E8875A; padding-bottom: 12px; font-size: 24px; }
+    h2 { color: #444; margin-top: 32px; font-size: 17px; border-left: 4px solid #E8875A; padding-left: 12px; }
+    p, li { font-size: 15px; }
+    .updated { color: #aaa; font-size: 13px; margin-bottom: 24px; }
+    .note { background: #F9F9F9; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #777; margin-top: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 10px 14px; text-align: left; word-break: break-word; vertical-align: top; }
+    th { background: #FFF3E8; color: #555; }
+    .contact-box { background: #FFF8F0; border: 1px solid #F5C897; border-radius: 12px; padding: 16px 20px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>外国における個人情報の取扱い</h1>
+  <p class="updated">最終更新日：2026年7月17日</p>
+
+  <p>このページは、<a href="./">プライバシーポリシー</a>第4章で案内している、外国にある事業者への個人情報の提供について、個人情報保護法が求める情報（外国の名称、当該外国の個人情報保護制度の概要、提供先が講じる保護措置）を分かりやすくまとめたものです。本人ユーザーの同意（初回起動時の同意画面）は、このページの内容を前提としています。</p>
+
+  <table>
+    <tr><th>事業者</th><th>国・地域</th><th>法的な整理</th><th>主な保護措置</th></tr>
+    <tr>
+      <td>Anthropic, PBC（Claude API）</td>
+      <td>米国</td>
+      <td>当方からの委託に基づく処理者</td>
+      <td>データ処理契約（DPA）の締結、通信の暗号化、標準的な入出力削除期間（原則30日）、商用APIの入出力を既定でモデル学習に利用しない旨の契約上の取り決め</td>
+    </tr>
+    <tr>
+      <td>Supabase, Inc.</td>
+      <td>米国（ただし本サービスが利用するデータベース本体は東京リージョン）</td>
+      <td>当方からの委託に基づく処理者</td>
+      <td>データ処理契約（DPA）の締結、通信の暗号化、行レベルセキュリティによるアクセス制御。サポート対応等の一部業務は米国拠点で行われる場合があります</td>
+    </tr>
+    <tr>
+      <td>Plus Five Five, Inc.（Resend）</td>
+      <td>米国</td>
+      <td>メール配信データについては委託先処理者、アカウント管理情報等の一部については独立した管理者として取り扱われる場合があります</td>
+      <td>データ処理契約（DPA）の締結、通信の暗号化、契約終了後90日以内のデータ削除、開封・クリック計測機能の不使用</td>
+    </tr>
+    <tr>
+      <td>AlphaAI Technologies Inc.（dba Tavily）</td>
+      <td>米国</td>
+      <td>当方からの委託に基づく処理者。ただし同社利用規約上、送信された情報をサービス改善等に利用できる条項が含まれます</td>
+      <td>送信対象を非センシティブな分野のキーワードに限定し、会話原文および健康関連情報を含む可能性がある場合は送信自体を行わないフェイルクローズ設計</td>
+    </tr>
+    <tr>
+      <td>Stripe, Inc.およびその関連会社（Stripe Japan, Inc.を含む）</td>
+      <td>米国・日本等</td>
+      <td>決済処理者。カード情報等の決済手段情報はStripe社が独立した管理者として取得・管理</td>
+      <td>PCI DSS準拠の決済基盤、データ処理契約（DPA）の締結、通信の暗号化</td>
+    </tr>
+    <tr>
+      <td>Google LLC（Gmail）</td>
+      <td>米国その他</td>
+      <td>お問い合わせ対応に用いるメールサービスの提供者（Google自身の契約条件に基づく取扱い）</td>
+      <td>Googleアカウントのセキュリティ機能、通信の暗号化</td>
+    </tr>
+  </table>
+
+  <h2>外国の個人情報保護制度について</h2>
+  <p>上記事業者が所在する米国には、日本の個人情報保護法のような全国統一の包括的な個人情報保護法制は存在せず、州ごとに異なるプライバシー関連法（カリフォルニア州のCCPA/CPRA等）や、業種ごとの規制が適用されます。第三者機関による法定の認定制度は、日本の個人情報保護委員会によるものとは異なります。このため、本人の権利行使の方法や監督機関の関与のあり方が日本と異なる場合があります。</p>
+
+  <h2>本人が確認できること</h2>
+  <ul>
+    <li>各事業者の名称・国名・処理の役割は、上記表のとおりです。</li>
+    <li>各事業者のプライバシーポリシーは、<a href="./">プライバシーポリシー</a>第4章末尾のリンクから確認できます。</li>
+    <li>当方と各事業者との間の契約関係（データ処理契約の有無等）についてのご質問は、下記お問い合わせ先までご連絡ください。</li>
+  </ul>
+
+  <div class="note">当方は、本人の同意を根拠として外国にある第三者へ個人情報を提供しています。委託先が十分な水準の個人情報保護制度を有すると認められる場合や、契約による相当措置を確保している場合であっても、このページの情報は変更されることがあります。重要な変更がある場合は、<a href="./">プライバシーポリシー</a>にてお知らせします。</div>
+
+  <div class="contact-box">
+    <p style="margin:0;"><strong>思い出トーク サポート（運営：座間太陽）</strong><br>
+    メールアドレス：<a href="mailto:omoidetalkapp@gmail.com">omoidetalkapp@gmail.com</a></p>
+  </div>
+
+  <p style="margin-top:32px; font-size:12px; color:#bbb; text-align:center;">© 2026 思い出トーク. All rights reserved.</p>
+</body>
+</html>
