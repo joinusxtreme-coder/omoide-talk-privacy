@@ -152,14 +152,8 @@
     const CHECKOUT_FUNCTION_URL = 'https://iyxjyobdpqsyrdbcckis.supabase.co/functions/v1/create-checkout-session';
     const ANON_KEY = 'sb_publishable_1eBf5hTxX141q9ExRFdImg_Zzuc1NI2';
 
-    function sessionKey(code) { return `dashboard_session_${code}`; }
-    function getStoredSession(code) { return localStorage.getItem(sessionKey(code)) || ''; }
-    function setStoredSession(code, token) { localStorage.setItem(sessionKey(code), token); }
-
-    function withSession(url, code) {
-      const session = getStoredSession(code);
-      return session ? `${url}&session=${encodeURIComponent(session)}` : url;
-    }
+    // セッションはJavaScriptから読み取れないHttpOnly Cookieでサーバー側から管理する。
+    // localStorageには何も保存しない（XSS発生時にセッションを窃取されるリスクを避けるため）。
 
     async function startCheckout() {
       const btn = document.getElementById('subscribe-btn');
@@ -194,9 +188,11 @@
       btn.textContent = '確認中...';
 
       try {
-        const res = await fetch(withSession(`${FUNCTION_URL}?code=${encodeURIComponent(code)}`, code), {
+        const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(code)}${sessionFromUrl ? `&session=${encodeURIComponent(sessionFromUrl)}` : ''}`, {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${ANON_KEY}` },
         });
+        sessionFromUrl = '';
         if (res.status === 404) {
           errorMsg.textContent = '合言葉が正しくありません';
           errorMsg.classList.remove('hidden');
@@ -229,9 +225,11 @@
 
     let currentCode = '';
     let currentData = null;
+    let sessionFromUrl = '';
 
     async function reloadDashboard() {
-      const res = await fetch(withSession(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}`, currentCode), {
+      const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}`, {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${ANON_KEY}` },
       });
       const data = await res.json();
@@ -246,6 +244,7 @@
       try {
         const res = await fetch(FUNCTION_URL, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: currentCode, action: 'send_dashboard_link' }),
         });
@@ -264,7 +263,8 @@
 
     async function searchDiaries() {
       const q = document.getElementById('diary-search')?.value.trim() || '';
-      const res = await fetch(withSession(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}&q=${encodeURIComponent(q)}`, currentCode), {
+      const res = await fetch(`${FUNCTION_URL}?code=${encodeURIComponent(currentCode)}&q=${encodeURIComponent(q)}`, {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${ANON_KEY}` },
       });
       const data = await res.json();
@@ -278,6 +278,7 @@
       try {
         await fetch(FUNCTION_URL, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: currentCode, action: 'acknowledge_diary', diary_id: diaryId }),
         });
@@ -302,14 +303,13 @@
       `).join('');
     }
 
-    // メール内リンク（?code=XXXXX&session=YYYY）から開いた場合は自動ログイン
+    // メール内リンク（?code=XXXXX&session=YYYY）から開いた場合は自動ログイン。
+    // セッショントークンはURLからそのままサーバーへ渡し、サーバー側がHttpOnly Cookieとして発行し直す。
     (function autoLoginFromUrl() {
       const params = new URLSearchParams(location.search);
       const codeParam = params.get('code');
       const sessionParam = params.get('session');
-      if (codeParam && sessionParam) {
-        setStoredSession(codeParam.toUpperCase(), sessionParam);
-      }
+      if (sessionParam) sessionFromUrl = sessionParam;
       if (codeParam) {
         document.getElementById('code').value = codeParam.toUpperCase();
         loginWithCode(codeParam.toUpperCase());
