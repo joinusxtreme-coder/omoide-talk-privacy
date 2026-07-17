@@ -189,6 +189,14 @@
           headers: { 'Authorization': `Bearer ${ANON_KEY}` },
         });
         if (res.status === 404) {
+          errorMsg.textContent = '合言葉が正しくありません';
+          errorMsg.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = '見る';
+          return;
+        }
+        if (res.status === 429) {
+          errorMsg.textContent = '試行回数が多すぎます。しばらく時間をおいてから再度お試しください。';
           errorMsg.classList.remove('hidden');
           btn.disabled = false;
           btn.textContent = '見る';
@@ -356,12 +364,12 @@
           </div>
         `;
       }).join('');
-      const weeklyChartHtml = `
+      const weeklyChartHtml = data.sharing?.activity ? `
         <div class="card">
           <div class="section-title">📊 今週の会話の様子</div>
           <div class="bar-chart">${barsHtml}</div>
         </div>
-      `;
+      ` : '';
 
       // ── 服薬状況（本日＋週間トレンド） ──
       const slotLabel = { morning: '朝', noon: '昼', evening: '夜' };
@@ -376,12 +384,17 @@
         return `<div class="med-row"><div class="med-slot">${slotLabel[slot]}のお薬</div>${badge}</div>`;
       }).join('');
       const medTrendHtml = renderMiniTrend(data.medicine?.weeklyTrend);
-      const medicineHtml = `
+      const medicineHtml = data.sharing?.medicine ? `
         <div class="card">
           <div class="section-title">💊 本日の服薬状況</div>
           ${medRowsHtml}
           <div class="section-title" style="margin-top:16px; font-size:13px;">週間の達成率推移</div>
           ${medTrendHtml}
+        </div>
+      ` : `
+        <div class="card">
+          <div class="section-title">💊 服薬状況</div>
+          <p class="empty">ご本人が共有をオフにしているため表示できません</p>
         </div>
       `;
 
@@ -390,7 +403,7 @@
       const waterCount = waterToday.todayTakenCount || 0;
       const waterChecks = waterToday.todayCount || 0;
       const waterTrendHtml = renderMiniTrend(data.water?.weeklyTrend);
-      const waterHtml = `
+      const waterHtml = data.sharing?.water ? `
         <div class="card">
           <div class="section-title">💧 本日の水分補給</div>
           <div class="med-row">
@@ -399,6 +412,11 @@
           </div>
           <div class="section-title" style="margin-top:16px; font-size:13px;">週間の達成率推移</div>
           ${waterTrendHtml}
+        </div>
+      ` : `
+        <div class="card">
+          <div class="section-title">💧 水分補給</div>
+          <p class="empty">ご本人が共有をオフにしているため表示できません</p>
         </div>
       `;
 
@@ -409,7 +427,7 @@
         const cls = mood >= 4 ? 'good' : mood <= 2 ? 'bad' : '';
         return `<div class="mood-dot ${cls}" style="height:${mood * 20}%" title="${w.checked_date}"></div>`;
       }).join('');
-      const wellnessHtml = wellnessList.length
+      const wellnessHtml = !data.sharing?.wellness ? '' : (wellnessList.length
         ? `
           <div class="card">
             <div class="section-title">🩺 最近の体調チェック</div>
@@ -418,7 +436,7 @@
             <div class="mood-row">${moodDotsHtml}</div>
           </div>
         `
-        : '';
+        : '');
 
       // ── アラート履歴 ──
       const alertLabel = { inactivity: '⚠️ 3日間未利用のお知らせ', weekly_report: '📅 週次レポート送信' };
@@ -439,12 +457,17 @@
         : '';
 
       // ── 日記一覧（検索付き） ──
-      const diaryListHtml = `
+      const diaryListHtml = data.sharing?.diary ? `
         <div class="card">
           <div class="section-title">📔 日記を探す</div>
           <input class="search-input" id="diary-search" placeholder="キーワードで検索（例：野球）" onkeydown="if(event.key==='Enter') searchDiaries()">
           <button onclick="searchDiaries()" style="margin-bottom:16px;">検索する</button>
           <div id="diary-list-area">${renderDiaryList(data.diaries)}</div>
+        </div>
+      ` : `
+        <div class="card">
+          <div class="section-title">📔 日記</div>
+          <p class="empty">ご本人が共有をオフにしているため表示できません</p>
         </div>
       `;
 
