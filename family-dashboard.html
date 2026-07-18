@@ -525,7 +525,14 @@
         </div>
       `;
 
-      area.innerHTML = headerHtml + statsHtml + weeklyChartHtml + medicineHtml + waterHtml + wellnessHtml + alertHtml + diaryListHtml;
+      const hasSessionInUrl = new URLSearchParams(location.search).has('session');
+      const bookmarkHintHtml = hasSessionInUrl ? `
+        <div class="card" style="background:#FFF8F0; padding:14px 18px;">
+          <p style="margin:0; font-size:13px; color:#888; line-height:1.7;">💡 このページを<strong>ブックマークに追加</strong>しておくと、次回から確認メールなしで開けます（約30日間有効）。</p>
+        </div>
+      ` : '';
+
+      area.innerHTML = headerHtml + bookmarkHintHtml + statsHtml + weeklyChartHtml + medicineHtml + waterHtml + wellnessHtml + alertHtml + diaryListHtml;
     }
 
     function renderMiniTrend(trend) {
