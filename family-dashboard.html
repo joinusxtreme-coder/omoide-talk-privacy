@@ -62,6 +62,7 @@
     .bar { width: 100%; max-width: 26px; background: #F5C897; border-radius: 6px 6px 2px 2px; transition: height .3s; }
     .bar.has-entry { background: #E8875A; }
     .bar-day { font-size: 10px; color: #aaa; margin-top: 6px; }
+    .bar-count { font-size: 10px; font-weight: bold; color: #999; margin-bottom: 3px; }
 
     .med-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px; border-bottom: 1px solid #f2ece4; }
     .med-row:last-child { border-bottom: none; }
@@ -80,13 +81,23 @@
     .mood-dot { flex: 1; border-radius: 6px; background: #F5C897; }
     .mood-dot.good { background: #6DBF67; }
     .mood-dot.bad { background: #E07A5F; }
+    .mood-legend { display: flex; gap: 14px; margin-top: 8px; font-size: 11px; color: #999; }
+    .mood-legend-item { display: flex; align-items: center; gap: 5px; }
+    .mood-legend-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+    .mood-legend-swatch.bad { background: #E07A5F; }
+    .mood-legend-swatch.mid { background: #F5C897; }
+    .mood-legend-swatch.good { background: #6DBF67; }
 
     .call-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: #6DBF67; color: #fff; font-size: 16px; font-weight: bold; border-radius: 14px; text-decoration: none; }
 
-    .mini-trend { display: flex; align-items: flex-end; gap: 6px; height: 50px; margin-top: 10px; }
+    .mini-trend { position: relative; display: flex; align-items: flex-end; gap: 6px; height: 70px; margin-top: 22px; padding-top: 4px; border-top: 1px dashed #eee; }
+    .mini-trend::before { content: '達成率100%'; position: absolute; top: -16px; left: 0; font-size: 9px; color: #ccc; }
     .mini-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .mini-bar-pct { font-size: 10px; font-weight: bold; color: #999; margin-bottom: 3px; }
     .mini-bar { width: 100%; max-width: 18px; border-radius: 4px 4px 1px 1px; background: #eee; }
-    .mini-bar.filled { background: #E8875A; }
+    .mini-bar.rate-high { background: #6DBF67; }
+    .mini-bar.rate-mid { background: #F0A94E; }
+    .mini-bar.rate-low { background: #E07A5F; }
 
     .ack-btn { font-size: 12px; color: #E8875A; background: none; border: 1px solid #E8D5C4; border-radius: 20px; padding: 4px 12px; width: auto; margin-top: 8px; cursor: pointer; }
     .ack-btn.done { color: #6DBF67; border-color: #6DBF67; }
@@ -413,6 +424,7 @@
         const heightPct = Math.max(6, Math.round((d.count / maxCount) * 100));
         return `
           <div class="bar-col">
+            <div class="bar-count">${d.count > 0 ? d.count : ''}</div>
             <div class="bar ${d.count > 0 ? 'has-entry' : ''}" style="height:${heightPct}%"></div>
             <div class="bar-day">${dayLabel}</div>
           </div>
@@ -488,6 +500,11 @@
             <div class="wellness-date">${wellnessList[0].checked_date}</div>
             <div class="wellness-box">${wellnessList[0].summary || 'コメントなし'}</div>
             <div class="mood-row">${moodDotsHtml}</div>
+            <div class="mood-legend">
+              <span class="mood-legend-item"><span class="mood-legend-swatch bad"></span>不調</span>
+              <span class="mood-legend-item"><span class="mood-legend-swatch mid"></span>ふつう</span>
+              <span class="mood-legend-item"><span class="mood-legend-swatch good"></span>良好</span>
+            </div>
           </div>
         `
         : '');
@@ -542,9 +559,12 @@
           ${trend.map(t => {
             const dayLabel = new Date(t.date + 'T00:00:00').toLocaleDateString('ja-JP', { weekday: 'short' });
             const pct = t.rate === null ? 0 : Math.max(4, t.rate);
+            const rateCls = t.rate === null ? '' : t.rate >= 80 ? 'rate-high' : t.rate >= 50 ? 'rate-mid' : 'rate-low';
+            const pctLabel = t.rate === null ? '' : `<div class="mini-bar-pct">${t.rate}%</div>`;
             return `
               <div class="mini-bar-col">
-                <div class="mini-bar ${t.rate !== null ? 'filled' : ''}" style="height:${pct}%"></div>
+                ${pctLabel}
+                <div class="mini-bar ${rateCls}" style="height:${pct}%"></div>
                 <div class="bar-day">${dayLabel}</div>
               </div>
             `;
