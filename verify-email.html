@@ -1,32 +1,32 @@
 <!DOCTYPE html>
-  <html lang="ja">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>メールアドレスの確認 - 思い出トーク</title>
-    <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; background: #FFF8F0; min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 20px; }
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メールアドレスの確認 - 思い出トーク</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; background: #FFF8F0; min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .card { background: #fff; border-radius: 20px; padding: 40px 32px; max-width: 480px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-          h1 { color: #E8875A; font-size: 22px; margin-bottom: 16px; }
-      p { color: #555; font-size: 15px; line-height: 1.8; }
+    h1 { color: #E8875A; font-size: 22px; margin-bottom: 16px; }
+    p { color: #555; font-size: 15px; line-height: 1.8; }
     button.btn { display: inline-block; margin-top: 20px; background: #E8875A; color: #fff; border: none; cursor: pointer; font-weight: bold; padding: 14px 32px; border-radius: 12px; font-size: 16px; font-family: inherit; }
-        button.btn:disabled { background: #ccc; cursor: default; }
-      </style>
-        </head>
-        <body>
-          <div class="card" id="card">
-          <p>確認しています…</p>
-        </div>
+    button.btn:disabled { background: #ccc; cursor: default; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <p>確認しています…</p>
+  </div>
 
-        <script>
-          const FUNCTION_BASE = 'https://iyxjyobdpqsyrdbcckis.supabase.co/functions/v1/verify-family-email';
+  <script>
+    const FUNCTION_BASE = 'https://iyxjyobdpqsyrdbcckis.supabase.co/functions/v1/verify-family-email';
     const params = new URLSearchParams(location.search);
     const token = params.get('token') || '';
     const card = document.getElementById('card');
 
     function renderError(message) {
       card.innerHTML = '<h1>エラー</h1><p>' + message + '</p>';
-}
+    }
 
     function renderConfirm() {
       card.innerHTML =
@@ -34,13 +34,13 @@
         '<p>下のボタンを押すと、このメールアドレスを「思い出トーク」の家族連絡先として確認します。</p>' +
         '<button class="btn" id="confirmBtn">確認する</button>';
       document.getElementById('confirmBtn').addEventListener('click', doConfirm);
-}
+    }
 
     function renderSuccess() {
       card.innerHTML =
         '<h1>確認できました</h1>' +
         '<p>メールアドレスの確認が完了しました。今後、思い出トークからの通知が届きます。このページは閉じていただいて大丈夫です。</p>';
-}
+    }
 
     async function doConfirm() {
       const btn = document.getElementById('confirmBtn');
@@ -50,33 +50,33 @@
         const data = await res.json();
         if (data.status === 'success') {
           renderSuccess();
-} else {
+        } else {
           renderError(data.message || 'エラーが発生しました。');
-}
-} catch (e) {
+        }
+      } catch (e) {
         renderError('通信エラーが発生しました。しばらくしてからもう一度お試しください。');
-}
-}
+      }
+    }
 
     async function init() {
       if (!token) {
         renderError('このリンクは無効です。');
         return;
-}
+      }
       try {
         const res = await fetch(FUNCTION_BASE + '?token=' + encodeURIComponent(token));
         const data = await res.json();
         if (data.status === 'confirm_needed') {
           renderConfirm();
-} else if (data.status === 'success') {
+        } else if (data.status === 'success') {
           renderSuccess();
-} else {
+        } else {
           renderError(data.message || 'エラーが発生しました。');
-}
-} catch (e) {
+        }
+      } catch (e) {
         renderError('通信エラーが発生しました。しばらくしてからもう一度お試しください。');
-}
-}
+      }
+    }
 
     init();
   </script>
