@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>思い出トーク | 高齢の親のための、AIの話し相手アプリ</title>
+<meta name="description" content="話しかけるだけで、AIが聞き役になる。会話は自動で日記になり、離れて暮らすご家族はスマホ一つで毎日の様子を見守れます。">
+<meta property="og:title" content="思い出トーク | 高齢の親のための、AIの話し相手アプリ">
+<meta property="og:description" content="話しかけるだけで、AIが聞き役に。会話は自動で日記になり、ご家族は様子を見守れます。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://omoidetalk.petprices.jp/lp-og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--o:#E8875A;--od:#C9663A;--bg:#FFF8F0;--bg2:#FDF1DB;--t:#3b2a22;--m:#7a6558;--w:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;color:var(--t);background:var(--bg);line-height:1.9;font-size:17px}
+a{color:var(--od)}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+header{padding:14px 0}
+header .wrap{display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:700;font-size:19px;color:var(--od);text-decoration:none}
+.hero{background:linear-gradient(180deg,var(--bg2),var(--bg));padding:36px 0 56px}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}
+.eyebrow{display:inline-block;background:var(--w);border:1px solid #f1cfb8;color:var(--od);border-radius:99px;padding:2px 14px;font-size:14px;font-weight:700}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.45;margin:14px 0 12px;color:#7a3b1d}
+h1 span{color:var(--o)}
+.lead{color:var(--m);margin:0 0 22px}
+.btn{display:inline-block;background:var(--o);color:#fff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:14px;box-shadow:0 4px 0 var(--od)}
+.btn.sub{background:var(--w);color:var(--od);border:2px solid var(--o);box-shadow:none;margin-left:8px}
+.shot{width:100%;max-width:300px;border-radius:22px;box-shadow:0 12px 30px rgba(120,60,20,.18);display:block;margin:0 auto}
+section{padding:56px 0}
+section.alt{background:var(--w)}
+h2{font-size:clamp(23px,4vw,30px);text-align:center;margin:0 0 10px;color:#7a3b1d}
+h2+p.sub{text-align:center;color:var(--m);margin:0 0 34px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--bg);border-radius:18px;padding:20px 22px;border:1px solid #f3dfcf}
+.card b{display:block;color:var(--od);margin-bottom:4px}
+.feat{display:grid;grid-template-columns:.8fr 1.2fr;gap:36px;align-items:center;margin:0 0 46px}
+.feat.rev{grid-template-columns:1.2fr .8fr}
+.feat.rev .shot{order:2}
+.feat h3{font-size:22px;margin:0 0 8px;color:#7a3b1d}
+.feat p{margin:0;color:var(--m)}
+.tag{display:inline-block;font-size:13px;font-weight:700;color:var(--w);background:var(--o);border-radius:6px;padding:0 9px;margin-bottom:8px}
+.tag.free{background:#6dbf67}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0;list-style:none}
+.steps li{counter-increment:s;background:var(--w);border-radius:18px;padding:20px 22px;border:1px solid #f3dfcf}
+.steps li::before{content:counter(s);display:inline-flex;width:34px;height:34px;border-radius:50%;background:var(--o);color:#fff;align-items:center;justify-content:center;font-weight:700;margin-bottom:6px}
+.price{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:700px;margin:0 auto}
+.plan{background:var(--bg);border:2px solid #f3dfcf;border-radius:20px;padding:24px;text-align:center}
+.plan.fam{border-color:var(--o);background:var(--w)}
+.plan h3{margin:0;font-size:19px}
+.plan .p{font-size:32px;font-weight:700;color:var(--od);margin:6px 0}
+.plan ul{text-align:left;padding-left:20px;margin:10px 0 0;font-size:15px;color:var(--m)}
+.note{font-size:14px;color:var(--m);text-align:center;margin-top:16px}
+details{background:var(--bg);border:1px solid #f3dfcf;border-radius:14px;padding:12px 18px;margin:0 0 10px}
+summary{cursor:pointer;font-weight:700}
+details p{margin:8px 0 2px;color:var(--m);font-size:16px}
+.cta{background:linear-gradient(180deg,var(--bg2),#fbe3cb);text-align:center}
+.cta ol{text-align:left;display:inline-block;margin:10px 0 18px;padding-left:22px}
+footer{padding:28px 0 40px;text-align:center;font-size:14px;color:var(--m)}
+footer a{margin:0 8px}
+@media(max-width:760px){
+.hero .wrap,.feat,.feat.rev{grid-template-columns:1fr}
+.feat.rev .shot{order:0}
+.cards,.steps,.price{grid-template-columns:1fr}
+.btn.sub{margin:10px 0 0}
+body{font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <a class="logo" href="./about.html">💬 思い出トーク</a>
+  <a href="#join" style="font-size:15px">テスター募集中</a>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow">高齢のご家族のための、AIの話し相手アプリ</span>
+    <h1>「今日は誰とも話してないんだよ」を、<span>少しでも減らしたい。</span></h1>
+    <p class="lead">アプリを開いて、話しかけるだけ。AIが聞き役になり、会話は自動で日記に残ります。離れて暮らすご家族は、スマホ一つで毎日の様子を見守れます。</p>
+    <a class="btn" href="#join">テスターに参加する</a><a class="btn sub" href="#feature">くわしく見る</a>
+  </div>
+  <img class="shot" src="./lp-talk.jpg" alt="思い出トークの会話画面。前回の話を覚えて返事をするAI" width="540" height="960">
+</div></div>
+
+<section>
+<div class="wrap">
+  <h2>こんな方に</h2>
+  <p class="sub">電話に出てあげたい気持ちはある。でも、毎日は難しい。</p>
+  <div class="cards">
+    <div class="card"><b>一人暮らしの親が心配</b>連絡する時間がなかなか取れず、様子が気になっている方。</div>
+    <div class="card"><b>話し相手がほしい</b>「今日は誰とも話していない」という日を、減らしたい方。</div>
+    <div class="card"><b>スマホは苦手でも大丈夫</b>文字は大きく、ボタンは少なく。声で話しかけることもできます。</div>
+  </div>
+</div>
+</section>
+
+<section class="alt" id="feature">
+<div class="wrap">
+  <h2>思い出トークでできること</h2>
+  <p class="sub">ご本人は無料。ご家族向けの見守り機能は月額です。</p>
+
+  <div class="feat">
+    <img class="shot" src="./lp-talk.jpg" alt="前の会話を覚えているAIとの会話画面" width="540" height="960" loading="lazy">
+    <div>
+      <span class="tag free">ご本人向け（無料）</span>
+      <h3>前の会話も、ちゃんと覚えています</h3>
+      <p>昔の思い出でも、今日あったことでも、なんでも話せます。前に話したことを覚えているので、「前回おっしゃっていた…」と話がつながります。AIはしゃべりすぎず、聞き役に徹します。音声入力にも対応しています。</p>
+    </div>
+  </div>
+
+  <div class="feat rev">
+    <img class="shot" src="./lp-diary.jpg" alt="会話が自動でまとまる日記の画面" width="540" height="960" loading="lazy">
+    <div>
+      <span class="tag free">ご本人向け（無料）</span>
+      <h3>会話が、自動で日記に</h3>
+      <p>話した内容は、AIが短い日記にまとめます。会話そのものではなく、事実だけを短く。見守られる側が窮屈に感じないよう、そうしています。</p>
+    </div>
+  </div>
+
+  <div class="feat">
+    <img class="shot" src="./lp-email.jpg" alt="ご家族に届く週次レポートのメール" width="540" height="960" loading="lazy">
+    <div>
+      <span class="tag">ご家族向け（月額980円）</span>
+      <h3>毎週の様子を、メールでお届け</h3>
+      <p>1週間のまとめが、ご家族のメールに届きます。何回話したか、いつ話したか。気になることがあれば、お電話してみてください。</p>
+    </div>
+  </div>
+
+  <div class="feat rev">
+    <img class="shot" src="./lp-dash.jpg" alt="ご家族向けダッシュボード。連続利用日数と今週の会話の様子" width="540" height="960" loading="lazy">
+    <div>
+      <span class="tag">ご家族向け（月額980円）</span>
+      <h3>離れていても、いつも見守れる</h3>
+      <p>家族ダッシュボードで、最後に使った時間や、何日続けて使っているかを確認できます。日記の内容も見られます。3日間使っていないときは、メールでお知らせします。ご本人が電話番号を設定していれば、ワンタップで電話をかけられます。</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="wrap">
+  <h2>はじめかた</h2>
+  <p class="sub">かんたん3ステップ。</p>
+  <ol class="steps">
+    <li><b>アプリを入れる</b><br>ご本人のAndroidスマホに、アプリをインストールします。</li>
+    <li><b>話しかける</b><br>アプリを開いて話しかけるだけ。会話は自動で日記になります。</li>
+    <li><b>ご家族が見守る</b><br>ご家族のメールアドレスを登録すると、家族ダッシュボードが使えます。</li>
+  </ol>
+</div>
+</section>
+
+<section class="alt">
+<div class="wrap">
+  <h2>料金</h2>
+  <p class="sub">お金を払うのは、ご家族側。ご本人にカードの操作はさせません。</p>
+  <div class="price">
+    <div class="plan"><h3>ご本人プラン</h3><div class="p">無料</div>
+      <ul><li>AIとの会話（音声入力に対応）</li><li>前回までの会話を覚えて話がつながる</li><li>会話が自動で日記に</li><li>文字サイズの調整</li></ul></div>
+    <div class="plan fam"><h3>ご家族プラン</h3><div class="p">月額980円<small style="font-size:14px">（税込）</small></div>
+      <ul><li>家族ダッシュボード</li><li>日記の確認</li><li>週次レポートのメール</li><li>3日間未利用のお知らせ</li><li><b>最初の7日間は無料</b></li></ul></div>
+  </div>
+  <p class="note">解約はお問い合わせ窓口へメールでご連絡ください。くわしくは<a href="./terms.html">利用規約</a>をご確認ください。</p>
+</div>
+</section>
+
+<section>
+<div class="wrap">
+  <h2>安心のために</h2>
+  <p class="sub">大切な会話だからこそ、取り扱いを明確にしています。</p>
+  <div class="cards">
+    <div class="card"><b>会話をAIの学習に使いません</b>ユーザーの会話内容を、当方独自のAIモデルの学習には利用しません。</div>
+    <div class="card"><b>健康の話は外に送りません</b>健康や病気に関する発言は、外部の検索サービスには送信しません。</div>
+    <div class="card"><b>見せるのは事実だけ</b>ご家族に届くのは、短くまとめた日記や回数。会話の全文は見せません。</div>
+  </div>
+  <p class="note">本サービスは医療行為や健康管理、緊急時の安否確認を目的とするものではありません。緊急時は110番・119番等へご連絡ください。</p>
+</div>
+</section>
+
+<section class="alt">
+<div class="wrap" style="max-width:720px">
+  <h2>よくある質問</h2>
+  <p class="sub"></p>
+  <details><summary>スマホが苦手な親でも使えますか？</summary><p>文字は大きく、ボタンは少なくしています。文字を打つのが大変な場合は、声で話しかけることもできます。</p></details>
+  <details><summary>iPhoneでも使えますか？</summary><p>いまはAndroid版を準備しています。iPhone版は未定です。</p></details>
+  <details><summary>ご家族に会話の全文は見られますか？</summary><p>いいえ。ご家族に届くのは、AIがまとめた短い日記と、利用回数や最終利用日時です。</p></details>
+  <details><summary>解約はどうすればいいですか？</summary><p>お問い合わせ窓口（omoidetalkapp@gmail.com）へメールでご連絡ください。次回更新日の前日までに受け付ければ、次回分から課金されません。</p></details>
+  <details><summary>データは安全ですか？</summary><p>データは、日本（東京）のデータベースに、アクセス制限と暗号化のもとで保存します。くわしくは<a href="./privacy-policy.html">プライバシーポリシー</a>をご覧ください。</p></details>
+</div>
+</section>
+
+<section class="cta" id="join">
+<div class="wrap" style="max-width:720px">
+  <h2>テスター募集中です</h2>
+  <p class="sub">Google Playのクローズドテストに、ご協力いただける方を募集しています。<br>期間は14日間。期間中に2〜3回、アプリを開いてみてください。</p>
+  <ol>
+    <li><a href="https://groups.google.com/g/-omoidetalk-testers">Googleグループに参加</a></li>
+    <li><a href="https://play.google.com/apps/testing/com.omoidetalk.app">ウェブでテスターになる</a></li>
+    <li><a href="https://play.google.com/store/apps/details?id=com.omoidetalk.app">Playストアからインストール</a></li>
+  </ol>
+  <p class="note">Playストアと同じGoogleアカウントでお願いします。①②を飛ばすと「アイテムが見つかりません」と表示されます。</p>
+</div>
+</section>
+
+<footer><div class="wrap">
+  <p>運営：座間 太陽（個人事業主）／ お問い合わせ：<a href="mailto:omoidetalkapp@gmail.com">omoidetalkapp@gmail.com</a></p>
+  <p><a href="./terms.html">利用規約・特定商取引法に基づく表記</a><a href="./privacy-policy.html">プライバシーポリシー</a></p>
+  <p>© 思い出トーク</p>
+</div></footer>
+
+</body>
+</html>
